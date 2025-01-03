@@ -1,6 +1,6 @@
 #include "pipe_networking.h"
-//UPSTREAM = to the server / from the client
-//DOWNSTREAM = to the client / from the server
+// UPSTREAM = to the server / from the client || WKP
+// DOWNSTREAM = to the client / from the server || PP
 /*=========================
   server_setup
 
@@ -9,13 +9,33 @@
 
   returns the file descriptor for the upstream pipe.
   =========================*/
-int server_setup() {
-  int from_client = 0;
+int server_setup()
+{
+  int from_client = mkfifo("toServer", 0666); // making WKP
+  if (from_client < 0)
+  {
+    printf("%s", strerror(errno));
+    exit(1);
+  }
+  int readfd = open("toServer", O_RDONLY);
+  char buff[100];
+  while (1)
+  {
+    int bytesread = read(readfd, buff, 100);
+    if (bytesread < 0)
+    {
+      printf("%s", strerror(errno));
+      exit(1);
+    }
+    if (bytesread != 0)
+      break;
+  }
+  remove("toServer");
   return from_client;
 }
 
 /*=========================
-  server_handshake 
+  server_handshake
   args: int * to_client
 
   Performs the server side pipe 3 way handshake.
@@ -23,11 +43,11 @@ int server_setup() {
 
   returns the file descriptor for the upstream pipe (see server setup).
   =========================*/
-int server_handshake(int *to_client) {
+int server_handshake(int *to_client)
+{
   int from_client;
   return from_client;
 }
-
 
 /*=========================
   client_handshake
@@ -38,11 +58,11 @@ int server_handshake(int *to_client) {
 
   returns the file descriptor for the downstream pipe.
   =========================*/
-int client_handshake(int *to_server) {
+int client_handshake(int *to_server)
+{
   int from_server;
   return from_server;
 }
-
 
 /*=========================
   server_connect
@@ -52,9 +72,8 @@ int client_handshake(int *to_server) {
 
   returns the file descriptor for the downstream pipe.
   =========================*/
-int server_connect(int from_client) {
-  int to_client  = 0;
+int server_connect(int from_client)
+{
+  int to_client = 0;
   return to_client;
 }
-
-
