@@ -28,7 +28,8 @@ int server_setup()
       exit(1);
     }
     if (bytesread != 0)
-      break;
+      break;&to_client );
+}
   }
   remove("toServer");
   return from_client;
@@ -45,7 +46,25 @@ int server_setup()
   =========================*/
 int server_handshake(int *to_client)
 {
-  int from_client;
+  *to_client = open("toClient", O_WRONLY);
+
+   srand(time(NULL));
+   int SYN_ACK = rand();
+
+   write(to_client,SYN_ACK, sizeof(SYN_ACK));
+
+  int from_client = open("toServer", RDONLY);
+  char buff[100];
+  int rdBytes = read(from_client, buff,100);
+  if (rdBytes < 0){
+    printf("%s", strerror(errno));
+    exit(1);
+  }
+  int ACK;
+  sscanf(buff, "%d", &ACK);
+  if(ACK == SYN_ACK + 1){
+    
+  }
   return from_client;
 }
 
