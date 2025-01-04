@@ -1,4 +1,6 @@
 #include "pipe_networking.h"
+#include <unistd.h>
+#include <stdio.h>
 // UPSTREAM = to the server / from the client || WKP
 // DOWNSTREAM = to the client / from the server || PP
 /*=========================
