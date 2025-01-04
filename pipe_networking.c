@@ -1,6 +1,9 @@
 #include "pipe_networking.h"
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 // UPSTREAM = to the server / from the client || WKP
 // DOWNSTREAM = to the client / from the server || PP
 /*=========================
@@ -13,14 +16,14 @@
   =========================*/
 int server_setup()
 {
-  int from_client = mkfifo("toServer", 0666); // making WKP
-  if (from_client < 0)
+  int wkp = mkfifo("toServer", 0666); // making WKP
+  if (wkp < 0)
   {
     printf("ERROR IN SERVER SETUP [MKFIFO], %s", strerror(errno));
     exit(1);
   }
-  int fd = open("toServer", O_RDONLY);
-  if (fd < 0)
+  int from_client = open("toServer", O_RDONLY);
+  if (from_client < 0)
   {
     printf("ERROR IN SERVER SETUP [OPEN], %s", strerror(errno));
     exit(1);
@@ -56,7 +59,7 @@ int server_handshake(int *to_client)
   srand(time(NULL));
   int SYNACK = rand();
 
-  write(to_client, SYNACK, sizeof(SYNACK));
+  write(*to_client, &SYNACK, sizeof(SYNACK));
 
   // CHECKING ACK
   char buff[100];
@@ -89,24 +92,24 @@ int server_handshake(int *to_client)
 int client_handshake(int *to_server)
 {
   char PP[] = "toClient";
-  int from_server = mkfifo(PP, 0666);
+  int wkp = mkfifo(PP, 0666);
 
   *to_server = open("toServer", O_WRONLY);
-  int writing = write(to_server, PP, strlen(PP) + 1);
+  int writing = write(*to_server, PP, strlen(PP) + 1);
   if (writing < 0)
   {
     printf("ERROR IN CLIENT HANDSHAKE, %s", strerror(errno));
   }
-  open(PP, O_RDONLY);
+  int from_server = open(PP, O_RDONLY);
   remove(PP);
 
   char buff[100];
-  int reading = read(PP, buff, 100);
+  int reading = read(from_server, buff, 100);
   int ack;
   sscanf(buff, "%d", &ack);
   ack += 1;
 
-  int writing2 = write(to_server, ack, sizeof(ack));
+  int writing2 = write(*to_server, &ack, sizeof(ack));
   return from_server;
 }
 
