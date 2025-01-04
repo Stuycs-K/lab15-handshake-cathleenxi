@@ -16,23 +16,16 @@ int server_setup()
   int from_client = mkfifo("toServer", 0666); // making WKP
   if (from_client < 0)
   {
-    printf("%s", strerror(errno));
+    printf("ERROR IN SERVER SETUP [MKFIFO], %s", strerror(errno));
     exit(1);
   }
-  int readfd = open("toServer", O_RDONLY);
-  char buff[100];
-  while (1)
+  int fd = open("toServer", O_RDONLY);
+  if (fd < 0)
   {
-    int bytesread = read(readfd, buff, 100);
-    if (bytesread < 0)
-    {
-      printf("%s", strerror(errno));
-      exit(1);
-    }
-    if (bytesread != 0)
-      break;&to_client );
-}
+    printf("ERROR IN SERVER SETUP [OPEN], %s", strerror(errno));
+    exit(1);
   }
+
   remove("toServer");
   return from_client;
 }
@@ -48,26 +41,40 @@ int server_setup()
   =========================*/
 int server_handshake(int *to_client)
 {
-  *to_client = open("toClient", O_WRONLY);
+  // READING SYN
+  int from_client = server_setup();
+  char PP[100];
+  int reading = read(from_client, PP, 100);
+  if (reading < 0)
+  {
+    printf("ERROR ON READING SYN: %s", strerror(errno));
+  }
 
-   srand(time(NULL));
-   int SYN_ACK = rand();
+  // SENDING SYNACK
+  *to_client = open(PP, O_WRONLY);
 
-   write(to_client,SYN_ACK, sizeof(SYN_ACK));
+  srand(time(NULL));
+  int SYNACK = rand();
 
-  int from_client = open("toServer", RDONLY);
+  write(to_client, SYNACK, sizeof(SYNACK));
+
+  // CHECKING ACK
   char buff[100];
-  int rdBytes = read(from_client, buff,100);
-  if (rdBytes < 0){
+  int rdBytes = read(from_client, buff, 100);
+  if (rdBytes < 0)
+  {
     printf("%s", strerror(errno));
     exit(1);
   }
-  int ACK;
-  sscanf(buff, "%d", &ACK);
-  if(ACK == SYN_ACK + 1){
-    
+  int ack;
+  sscanf(buff, "%d", &ack);
+  if (ack == SYNACK + 1)
+  {
+    printf("Three-way handshake has been completed\n");
+    return from_client;
   }
-  return from_client;
+  printf("ACK does not match SYNACK\n");
+  return 0;
 }
 
 /*=========================
@@ -81,7 +88,25 @@ int server_handshake(int *to_client)
   =========================*/
 int client_handshake(int *to_server)
 {
-  int from_server;
+  char PP[] = "toClient";
+  int from_server = mkfifo(PP, 0666);
+
+  *to_server = open("toServer", O_WRONLY);
+  int writing = write(to_server, PP, strlen(PP) + 1);
+  if (writing < 0)
+  {
+    printf("ERROR IN CLIENT HANDSHAKE, %s", strerror(errno));
+  }
+  open(PP, O_RDONLY);
+  remove(PP);
+
+  char buff[100];
+  int reading = read(PP, buff, 100);
+  int ack;
+  sscanf(buff, "%d", &ack);
+  ack += 1;
+
+  int writing2 = write(to_server, ack, sizeof(ack));
   return from_server;
 }
 
