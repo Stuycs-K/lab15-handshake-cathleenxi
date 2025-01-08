@@ -16,20 +16,20 @@
   =========================*/
 int server_setup()
 {
-  int wkp = mkfifo("toServer", 0666); // making WKP
+  int wkp = mkfifo(WKP, 0666); // making WKP
   if (wkp < 0)
   {
     printf("ERROR IN SERVER SETUP [MKFIFO], %s", strerror(errno));
     exit(1);
   }
-  int from_client = open("toServer", O_RDONLY);
+  int from_client = open(WKP, O_RDONLY);
   if (from_client < 0)
   {
     printf("ERROR IN SERVER SETUP [OPEN], %s", strerror(errno));
     exit(1);
   }
 
-  remove("toServer");
+  remove(WKP);
   return from_client;
 }
 
@@ -56,8 +56,10 @@ int server_handshake(int *to_client)
   // SENDING SYNACK
   *to_client = open(PP, O_WRONLY);
 
-  srand(time(NULL));
-  int SYNACK = rand();
+  //srand(time(NULL));
+  //int SYNACK = rand();
+  int SYNACK = 1;
+  printf("SYNACK: %d\n", SYNACK);
 
   write(*to_client, &SYNACK, sizeof(SYNACK));
 
@@ -76,7 +78,7 @@ int server_handshake(int *to_client)
     printf("Three-way handshake has been completed\n");
     return from_client;
   }
-  printf("ACK does not match SYNACK\n");
+  printf("Recieved %d. ACK does not match SYNACK\n", ack);
   return 0;
 }
 
@@ -94,7 +96,7 @@ int client_handshake(int *to_server)
   char PP[] = "toClient";
   int wkp = mkfifo(PP, 0666);
 
-  *to_server = open("toServer", O_WRONLY);
+  *to_server = open(WKP, O_WRONLY);
   int writing = write(*to_server, PP, strlen(PP) + 1);
   if (writing < 0)
   {
@@ -107,9 +109,14 @@ int client_handshake(int *to_server)
   int reading = read(from_server, buff, 100);
   int ack;
   sscanf(buff, "%d", &ack);
+  printf("client ack: %d\n", ack);
   ack += 1;
+  //printf("client ack: %dsp", ack);
 
-  int writing2 = write(*to_server, &ack, sizeof(ack));
+  char buff2[100];
+  sprintf(buff2, "%d", ack);
+  printf("client writing %s\n", buff2);
+  int writing2 = write(*to_server, buff2, sizeof(ack));
   return from_server;
 }
 

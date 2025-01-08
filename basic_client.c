@@ -7,4 +7,18 @@ int main()
   int from_server; // PP
 
   from_server = client_handshake(&to_server);
+
+  while(1){
+    open(from_server, O_RDONLY);
+    char buff[100];
+    int numbytes = read(from_server, buff, 100);
+    if(numbytes == 0){
+      printf("Read 0 bytes, Pipe closed\n");
+      break;
+    }
+    if(numbytes == -1){
+      printf(strerror(errno));
+    }
+    printf("%s\n", buff);
+  }
 }
