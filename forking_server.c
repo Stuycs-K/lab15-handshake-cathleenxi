@@ -23,10 +23,13 @@ int main()
     while (1)
     {
       printf("inside loop\n");
+      from_client = server_setup();
+      pid_t subserver = fork();
+      if(subserver == 0){
+        server_handshake_half(&to_client, from_client);
         int num = rand();
         char buff[100];
         sprintf(buff, "%d", num);
-        from_client = server_handshake(&to_client);
         printf("abt to open\n");
         int fd = open(to_client, O_WRONLY);
         printf("opened\n");
@@ -39,6 +42,7 @@ int main()
         printf("wrote and slept\n");
         close(from_client);
         close(to_client);
+      }
     }
     remove(WKP);
     return 0;

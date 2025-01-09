@@ -19,6 +19,7 @@ int main()
     if(numbytes == -1){
       printf(strerror(errno));
     }
+    
     printf("%s\n", buff);
   }
 }
