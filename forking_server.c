@@ -1,6 +1,5 @@
 #include "pipe_networking.h"
-#include <unistd.h>
-
+#include <time.h>
 void sighandler(int signo)
 {
     if (signo == SIGINT)
@@ -18,22 +17,28 @@ int main()
 
     signal(SIGINT, sighandler);
 
+    srand(time(NULL));
+
+    printf("outside loop\n");
     while (1)
     {
-        from_client = server_setup();
+      printf("inside loop\n");
+        int num = rand();
+        char buff[100];
+        sprintf(buff, "%d", num);
+        from_client = server_handshake(&to_client);
+        printf("abt to open\n");
+        int fd = open(to_client, O_WRONLY);
+        printf("opened\n");
+        //if(fdprintf(strerror(errno))
 
-        pid_t subserver;
-        subserver = fork();
-        if(subserver<0){
-          perror("fork fail");//output to stderr instead of stdout
-          exit(1);
-        } else if ( subserver == 0){
-            server_connect(from_client);
-        }else{
-
-          close(from_client);
-          close(to_client);
-        }
+        printf("abt to write\n");
+        write(to_client, buff, sizeof(buff));
+        printf("abt to sleep\n");
+        sleep(1);
+        printf("wrote and slept\n");
+        close(from_client);
+        close(to_client);
     }
     remove(WKP);
     return 0;

@@ -46,40 +46,7 @@ int server_handshake(int *to_client)
 {
   // READING SYN
   int from_client = server_setup();
-  char PP[100];
-  int reading = read(from_client, PP, 100);
-  if (reading < 0)
-  {
-    printf("ERROR ON READING SYN: %s", strerror(errno));
-  }
-
-  // SENDING SYNACK
-  *to_client = open(PP, O_WRONLY);
-
-  //srand(time(NULL));
-  //int SYNACK = rand();
-  int SYNACK = 1;
-  printf("SYNACK: %d\n", SYNACK);
-
-  write(*to_client, &SYNACK, sizeof(SYNACK));
-
-  // CHECKING ACK
-  char buff[100];
-  int rdBytes = read(from_client, buff, 100);
-  if (rdBytes < 0)
-  {
-    printf("%s", strerror(errno));
-    exit(1);
-  }
-  int ack;
-  sscanf(buff, "%d", &ack);
-  if (ack == SYNACK + 1)
-  {
-    printf("Three-way handshake has been completed\n");
-    return from_client;
-  }
-  printf("Recieved %d. ACK does not match SYNACK\n", ack);
-  return 0;
+  return server_handshake_half(to_client, from_client);
 }
 
 /*=========================
@@ -132,4 +99,41 @@ int server_connect(int from_client)
 {
   int to_client = 0;
   return to_client;
+}
+
+int server_handshake_half(int *to_client, int from_client){
+  char PP[100];
+  int reading = read(from_client, PP, 100);
+  if (reading < 0)
+  {
+    printf("ERROR ON READING SYN: %s", strerror(errno));
+  }
+
+  // SENDING SYNACK
+  *to_client = open(PP, O_WRONLY);
+
+  //srand(time(NULL));
+  //int SYNACK = rand();
+  int SYNACK = 1;
+  printf("SYNACK: %d\n", SYNACK);
+
+  write(*to_client, &SYNACK, sizeof(SYNACK));
+
+  // CHECKING ACK
+  char buff[100];
+  int rdBytes = read(from_client, buff, 100);
+  if (rdBytes < 0)
+  {
+    printf("%s", strerror(errno));
+    exit(1);
+  }
+  int ack;
+  sscanf(buff, "%d", &ack);
+  if (ack == SYNACK + 1)
+  {
+    printf("Three-way handshake has been completed\n");
+    return from_client;
+  }
+  printf("Recieved %d. ACK does not match SYNACK\n", ack);
+  return 0;
 }
