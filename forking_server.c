@@ -27,19 +27,27 @@ int main()
       pid_t subserver = fork();
       if(subserver == 0){
         server_handshake_half(&to_client, from_client);
+
         int num = rand();
         char buff[100];
         sprintf(buff, "%d", num);
-        printf("abt to open\n");
+    //    printf("abt to open\n");
         int fd = open(to_client, O_WRONLY);
-        printf("opened\n");
+      //  printf("opened\n");
         //if(fdprintf(strerror(errno))
 
-        printf("abt to write\n");
+      //  printf("abt to write\n");
         write(to_client, buff, sizeof(buff));
-        printf("abt to sleep\n");
+      //  printf("abt to sleep\n");
         sleep(1);
         printf("wrote and slept\n");
+
+        char buff2[100];
+        int readBytes = read(from_client, buff2, 100);
+        if(readBytes < 0) printf("%s", strerror(errno));
+
+        sleep(1);
+        printf("%s\n", buff);
         close(from_client);
         close(to_client);
       }

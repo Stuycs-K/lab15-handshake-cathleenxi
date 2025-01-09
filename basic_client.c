@@ -19,7 +19,13 @@ int main()
     if(numbytes == -1){
       printf(strerror(errno));
     }
-    
-    printf("%s\n", buff);
+
+    printf("Random number recieved: %s\n", buff);
+    char str[100] = "hello from client\n";
+    write(to_server, str, sizeof(str));
+
   }
+//  char str[100] = "hello from client\n";
+//  write(to_server, str, sizeof(str));
+  //sleep(5);
 }
