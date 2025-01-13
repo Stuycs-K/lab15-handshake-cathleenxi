@@ -78,7 +78,7 @@ int client_handshake(int *to_server)
   sscanf(buff, "%d", &ack);
   printf("client ack: %d\n", ack);
   ack += 1;
-  //printf("client ack: %dsp", ack);
+  // printf("client ack: %dsp", ack);
 
   char buff2[100];
   sprintf(buff2, "%d", ack);
@@ -101,7 +101,8 @@ int server_connect(int from_client)
   return to_client;
 }
 
-int server_handshake_half(int *to_client, int from_client){
+int server_handshake_half(int *to_client, int from_client)
+{
   char PP[100];
   int reading = read(from_client, PP, 100);
   if (reading < 0)
@@ -112,12 +113,12 @@ int server_handshake_half(int *to_client, int from_client){
   // SENDING SYNACK
   *to_client = open(PP, O_WRONLY);
 
-  //srand(time(NULL));
-  //int SYNACK = rand();
-  int SYNACK = 1;
-  printf("SYNACK: %d\n", SYNACK);
+  // srand(time(NULL));
+  // int SYNACK = rand();
+  char buff2[100];
+  sprintf(buff2, "%d", SYN_ACK);
 
-  write(*to_client, &SYNACK, sizeof(SYNACK));
+  write(*to_client, buff2, sizeof(buff2));
 
   // CHECKING ACK
   char buff[100];
@@ -129,7 +130,7 @@ int server_handshake_half(int *to_client, int from_client){
   }
   int ack;
   sscanf(buff, "%d", &ack);
-  if (ack == SYNACK + 1)
+  if (ack == ACK)
   {
     printf("Three-way handshake has been completed\n");
     return from_client;
