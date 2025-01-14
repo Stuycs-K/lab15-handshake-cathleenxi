@@ -16,6 +16,7 @@
   =========================*/
 int server_setup()
 {
+  unlink(WKP);
   int wkp = mkfifo(WKP, 0666); // making WKP
   if (wkp < 0)
   {
@@ -76,13 +77,13 @@ int client_handshake(int *to_server)
   int reading = read(from_server, buff, 100);
   int ack;
   sscanf(buff, "%d", &ack);
-  printf("client ack: %d\n", ack);
+//  printf("client ack: %d\n", ack);
   ack += 1;
   // printf("client ack: %dsp", ack);
 
   char buff2[100];
   sprintf(buff2, "%d", ack);
-  printf("client writing %s\n", buff2);
+//  printf("client writing %s\n", buff2);
   int writing2 = write(*to_server, buff2, sizeof(ack));
   return from_server;
 }

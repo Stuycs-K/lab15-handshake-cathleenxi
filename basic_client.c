@@ -21,9 +21,6 @@ int main()
     }
 
     printf("Random number recieved: %s\n", buff);
-    char str[100] = "hello from client\n";
-    write(to_server, str, sizeof(str));
-
   }
 //  char str[100] = "hello from client\n";
 //  write(to_server, str, sizeof(str));
